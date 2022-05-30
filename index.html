@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File uploader</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+<body >
+   
+    <div class="container bg-primary ">
+
+        <h1 class="text-center">Multi Image uploader</h1>
+        <form >
+            <div class="form-group">
+                <input type="file" id="upload"  required  multiple accept="image/*"  class="form-control">
+            </div>
+        </form>
+        <div id="images">
+
+        </div>
+    </div>
+</body>
+
+<script src="/siofu/client.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    
+    var socket = io.connect();
+    var siofu = new SocketIOFileUpload(socket);
+    siofu.listenOnInput(document.getElementById('upload'));
+
+    siofu.addEventListener("progress", function (event) {
+            var percent = (event.bytesLoaded / event.file.size) * 100;
+            console.log("File is", percent.toFixed(2), "percent loaded");
+          });
+          siofu.addEventListener('complete',function(event){
+              console.log(event)
+
+              const img = document.createElement('img');
+              img.src=event.detail.nameofImage;
+              img.addEventListener("click", (e) => {
+              $.ajax({
+                  method:'GET',
+                  url:'/deleteimage',
+                  data:{
+                      path:event.detail.nameofImage
+                  },
+                  success:function(data){
+                      img.remove();
+                  console.log("image is deleted successsfully")
+                  }
+              })
+            });
+              img.setAttribute('style','float:left;width:500px;height:350px')
+              document.getElementById('images').appendChild(img)
+          })
+        
+</script>
+</html>
